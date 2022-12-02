@@ -4,8 +4,10 @@ pub fn solve() {
     let input = fs::read_to_string("input/day01-1.txt")
         .expect("file not found");
 
+    println!("Dec 01:");
     part_one(&input);
     part_two(&input);
+    println!();
 }
 
 fn part_one(input: &String) {
@@ -40,7 +42,7 @@ fn part_two(input: &String) {
         sum += top_three[i]
     }
 
-    println!("Part one answer: {sum}")
+    println!("Part two answer: {sum}")
 }
 
 fn comp_top_three(top_three: &mut [u32], elf: u32) {
