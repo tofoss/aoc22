@@ -1,6 +1,6 @@
-# AOC
+# AOC 2022
 
-First time using Rust please don't judge.
+First AOC, first time using Rust.
 
 ## Day template
 ```rust
@@ -22,15 +22,15 @@ pub fn solve() {
     println!();
 }
 
-fn part_one(input: &String) {
-    let result: usize = input.trim().split("\n").map(|_| 0).sum();
+fn part_one(input: &_) {
+    let result: usize = 0;
 
     println!("Part one answer: {result}")
 }
 
 
-fn part_two(input: &String) {
-    let result: usize = input.trim().split("\n").map(|_| 0).sum();
+fn part_two(input: &_) {
+    let result: usize = 0;
 
     println!("Part two answer: {result}")
 }
