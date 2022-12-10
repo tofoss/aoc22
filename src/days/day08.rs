@@ -35,12 +35,12 @@ fn part_one(forest: &Vec<Vec<u8>>) {
         for j in 0..forest[i].len() {
             if visibility[i][j] {
                 result += 1;
-                print!("{}", forest[i][j] - 48);
+                //print!("{}", forest[i][j] - 48);
             } else {
-                print!("_");
+                //print!("_");
             }
         }
-        println!();
+        //println!();
     }
 
     println!("Part one answer: {result}")
