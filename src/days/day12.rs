@@ -83,8 +83,25 @@ pub fn solve() {
     println!("Dec {DAY}:");
 
     spt(&mut map, &mut paths, start, end);
+    retrace(&map, end, end);
 
     println!();
+}
+
+fn retrace(map: &Vec<Vec<Node>>, cur: Point, end: Point) {
+    let s = map[cur.y][cur.x];
+    if s.n == b'a' {
+        println!("Found the A! {:?}", map[end.y][end.x].dist - map[cur.y][cur.x].dist);
+        return;
+    }
+    let n: Vec<Point> = vec![s.up(), s.down(map.iter().count()), s.left(), s.right(map[0].len())]
+        .iter()
+        .filter(|c| c.is_some())
+        .map(|c| c.unwrap())
+        .filter(|c| map[c.y][c.x].dist == s.dist - 1)
+        .collect();
+
+    retrace(map, n[0], end)
 }
 
 fn spt(map: &mut Vec<Vec<Node>>, paths: &mut Vec<Point>, start: Point, end: Point) {
