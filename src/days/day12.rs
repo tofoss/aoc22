@@ -74,77 +74,72 @@ pub fn solve() {
         map.push(row)
     }
     map[start.y][start.x].n = b'a';
-    map[start.y][start.x].dist = 0;
     map[end.y][end.x].n = b'z';
+    map[end.y][end.x].dist = 0;
 
     let mut paths: Vec<Point> = Vec::new();
 
         
     println!("Dec {DAY}:");
 
-    spt(&mut map, &mut paths, start, end);
-    retrace(&map, end, end);
+    spt2(&mut map, &mut paths, end, b'a', Point {x: 0, y: 0});
 
     println!();
 }
 
-fn retrace(map: &Vec<Vec<Node>>, cur: Point, end: Point) {
+fn spt2(map: &mut Vec<Vec<Node>>, paths: &mut Vec<Point>, cur: Point, end: u8, nearest: Point) {
+    map[cur.y][cur.x].visited = true;
     let s = map[cur.y][cur.x];
-    if s.n == b'a' {
-        println!("Found the A! {:?}", map[end.y][end.x].dist - map[cur.y][cur.x].dist);
-        return;
+
+    let mut near = nearest;
+
+    if s.n == end {
+        if s.dist < map[nearest.y][nearest.x].dist {
+            near = Point {y: s.y, x: s.x};
+        }
+
+        println!("Found the A! {:?}", s);
     }
-    let n: Vec<Point> = vec![s.up(), s.down(map.iter().count()), s.left(), s.right(map[0].len())]
-        .iter()
-        .filter(|c| c.is_some())
-        .map(|c| c.unwrap())
-        .filter(|c| map[c.y][c.x].dist == s.dist - 1)
-        .collect();
 
-    retrace(map, n[0], end)
-}
-
-fn spt(map: &mut Vec<Vec<Node>>, paths: &mut Vec<Point>, start: Point, end: Point) {
-    if start == end {
-        println!("Found the End! {:?}", map[end.y][end.x].dist);
+    let neighbours: Vec<Point> = find_neighs2(&s, map);
+    if neighbours.is_empty() && paths.is_empty() {
+        println!("Found the closest A! {:?}", map[near.y][near.x]);
         return
     }
-    map[start.y][start.x].visited = true;
-    let s = map[start.y][start.x];
 
-
-    let neighbours: Vec<Point> = find_neighs(&s, map);
     if neighbours.is_empty() {
-        let mut fresh_paths: Vec<Point> = paths.iter().filter(|p| !map[p.y][p.x].visited).map(|p| *p).collect();
-        let mut closest = map[fresh_paths[0].y][fresh_paths[0].x];
-        let mut idx = 0;
-        for i in 0..fresh_paths.len() {
-            if map[fresh_paths[i].y][fresh_paths[i].x].dist < closest.dist {
-                closest = map[fresh_paths[i].y][fresh_paths[i].x];
-                idx = i;
-            }
-        }
-        fresh_paths.remove(idx);
-        spt(map, &mut fresh_paths, Point {y: closest.y, x: closest.x}, end);
-    } else {
+        return backtrack2(map, paths, end, near)
+    } 
+    let mut closest = map[neighbours[0].y][neighbours[0].x];
 
-        let mut closest = map[neighbours[0].y][neighbours[0].x];
-
-        for n in &neighbours {
-            if map[n.y][n.x].dist > s.dist + 1 {
-                map[n.y][n.x].dist = s.dist + 1;
-            }
-            if map[n.y][n.x].dist < closest.dist {
-                closest = map[n.y][n.x]
-            }
-            paths.push(*n);
+    for n in &neighbours {
+        if map[n.y][n.x].dist > s.dist + 1 {
+            map[n.y][n.x].dist = s.dist + 1;
         }
-        spt(map, paths, Point {y: closest.y, x: closest.x}, end);
+        if map[n.y][n.x].dist < closest.dist {
+            closest = map[n.y][n.x]
+        }
+        paths.push(*n);
     }
-
+    spt2(map, paths, Point {y: closest.y, x: closest.x}, end, near);
 }
 
-fn find_neighs(s: &Node, map: &Vec<Vec<Node>>) -> Vec<Point> {
+fn backtrack2(map: &mut Vec<Vec<Node>>, paths: &mut Vec<Point>, end: u8, nearest: Point) {
+    let mut unvisited: Vec<Point> = paths.iter().filter(|p| !map[p.y][p.x].visited).map(|p| *p).collect();
+    let mut closest = map[unvisited[0].y][unvisited[0].x];
+    let mut idx = 0;
+    for i in 0..unvisited.len() {
+        if map[unvisited[i].y][unvisited[i].x].dist < closest.dist {
+            closest = map[unvisited[i].y][unvisited[i].x];
+            idx = i;
+        }
+    }
+    unvisited.remove(idx);
+
+    spt2(map, &mut unvisited, Point {y: closest.y, x: closest.x}, end, nearest);
+}
+
+fn find_neighs2(s: &Node, map: &Vec<Vec<Node>>) -> Vec<Point> {
     let n: Vec<Point> = vec![s.up(), s.down(map.iter().count()), s.left(), s.right(map[0].len())]
         .iter()
         .filter(|c| c.is_some())
@@ -152,6 +147,5 @@ fn find_neighs(s: &Node, map: &Vec<Vec<Node>>) -> Vec<Point> {
         .filter(|c| !map[c.y][c.x].visited)
         .collect();
 
-    return n.iter().filter(|c| s.n >= map[c.y][c.x].n - 1).map(|c| *c).collect();
+    return n.iter().filter(|c| s.n <= map[c.y][c.x].n + 1).map(|c| *c).collect();
 }
-
