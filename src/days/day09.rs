@@ -106,6 +106,7 @@ fn mv_tail(rope: &mut Vec<Pos>) {
     }
 }
 
+#[allow(dead_code)]
 fn print_grid(visits: &Vec<Pos>) {
     let mut grid = vec![vec!["."; 55]; 30];
     for v in visits {

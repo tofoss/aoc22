@@ -2,45 +2,31 @@ use std::{fs, cmp::Ordering};
 
 const DAY: &str = "13";
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 enum Packet {
     Num(usize),
     List(Vec<Packet>),
 }
 
-fn right_order(left: &Packet, right: &Packet) -> Ordering {
-    match (left, right) {
-        (Packet::Num(l), Packet::Num(r))   => cmp_num(l, r),
-        (Packet::List(l), Packet::List(r)) => cmp_list(l, r),
-        (Packet::Num(l), Packet::List(r))  => cmp_list(&vec![Packet::Num(*l)], r),
-        (Packet::List(l), Packet::Num(r))  => cmp_list(l, &vec![Packet::Num(*r)]),
+impl PartialOrd for Packet {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
 }
 
-fn cmp_num(l: &usize, r: &usize) -> Ordering {
-    if l == r {
-        Ordering::Equal
-    } else if l < r {
-        Ordering::Less
-    } else {
-        Ordering::Greater
+impl Ord for Packet {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match (self, other) {
+            (Packet::Num(l), Packet::Num(r))   => l.cmp(r),
+            (Packet::List(l), Packet::List(r)) => cmp_list(l, r),
+            (Packet::Num(l), Packet::List(r))  => cmp_list(&vec![Packet::Num(*l)], r),
+            (Packet::List(l), Packet::Num(r))  => cmp_list(l, &vec![Packet::Num(*r)]),
+        }
     }
 }
 
 fn cmp_list(l: &Vec<Packet>, r: &Vec<Packet>) -> Ordering {
-    for (li, ri) in l.iter().zip(r) {
-        let state = right_order(li, ri);
-        if state != Ordering::Equal {
-            return state;
-        }
-    }
-    if l.len() < r.len() {
-        return Ordering::Less;
-    } if l.len() == r.len() {
-        return Ordering::Equal;
-    } else {
-        return Ordering::Greater;
-    }
+    return l.cmp(r);
 }
 
 
@@ -90,24 +76,27 @@ pub fn solve() {
 
     let mut sum = 0;
     for i in (0..packets.len()).step_by(2) {
-        if right_order(&packets[i], &packets[i+1]) == Ordering::Less {
+        if &packets[i] < &packets[i+1]{
             sum += i / 2 + 1;
         }
     }
 
-    packets.push(Packet::List(vec![Packet::Num(2)]));
-    packets.push(Packet::List(vec![Packet::Num(6)]));
+    let divider1 = Packet::List(vec![Packet::Num(2)]);
+    let divider2 = Packet::List(vec![Packet::Num(6)]);
 
-    packets.sort_by(right_order);
+    packets.push(divider1.clone());
+    packets.push(divider2.clone());
+
+    packets.sort();
 
     let mut first_key = 0;
     let mut second_key = 0;
 
     for (i, p) in packets.iter().enumerate() {
-        if right_order(&p, &Packet::List(vec![Packet::Num(2)])) == Ordering::Equal {
+        if p == &divider1 {
             first_key = i + 1;
         }
-        if right_order(&p, &Packet::List(vec![Packet::Num(6)])) == Ordering::Equal {
+        if p == &divider2 {
             second_key = i + 1;
         }
     }
