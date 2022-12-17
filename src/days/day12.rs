@@ -97,8 +97,6 @@ fn spt2(map: &mut Vec<Vec<Node>>, paths: &mut Vec<Point>, cur: Point, end: u8, n
         if s.dist < map[nearest.y][nearest.x].dist {
             near = Point {y: s.y, x: s.x};
         }
-
-        println!("Found the A! {:?}", s);
     }
 
     let neighbours: Vec<Point> = find_neighs2(&s, map);
