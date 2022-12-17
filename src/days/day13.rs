@@ -1,21 +1,14 @@
-use std::fs;
+use std::{fs, cmp::Ordering};
 
 const DAY: &str = "13";
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Packet {
     Num(usize),
     List(Vec<Packet>),
 }
 
-#[derive(PartialEq, Eq)]
-enum State {
-    Unknown = 0,
-    Fail = 1,
-    Pass = -1,
-}
-
-fn right_order(left: &Packet, right: &Packet) -> State {
+fn right_order(left: &Packet, right: &Packet) -> Ordering {
     match (left, right) {
         (Packet::Num(l), Packet::Num(r))   => cmp_num(l, r),
         (Packet::List(l), Packet::List(r)) => cmp_list(l, r),
@@ -24,29 +17,29 @@ fn right_order(left: &Packet, right: &Packet) -> State {
     }
 }
 
-fn cmp_num(l: &usize, r: &usize) -> State {
+fn cmp_num(l: &usize, r: &usize) -> Ordering {
     if l == r {
-        State::Unknown
+        Ordering::Equal
     } else if l < r {
-        State::Pass
+        Ordering::Less
     } else {
-        State::Fail
+        Ordering::Greater
     }
 }
 
-fn cmp_list(l: &Vec<Packet>, r: &Vec<Packet>) -> State {
+fn cmp_list(l: &Vec<Packet>, r: &Vec<Packet>) -> Ordering {
     for (li, ri) in l.iter().zip(r) {
         let state = right_order(li, ri);
-        if state != State::Unknown {
+        if state != Ordering::Equal {
             return state;
         }
     }
     if l.len() < r.len() {
-        return State::Pass;
+        return Ordering::Less;
     } if l.len() == r.len() {
-        return State::Unknown;
+        return Ordering::Equal;
     } else {
-        return State::Fail;
+        return Ordering::Greater;
     }
 }
 
@@ -89,7 +82,7 @@ pub fn solve() {
     let prod = format!("input/day{DAY}.txt");
 
     let input = fs::read_to_string(prod).unwrap();
-    let packets: Vec<Packet> = input
+    let mut packets: Vec<Packet> = input
         .trim()
         .lines()
         .filter_map(|s| (!s.is_empty()).then(|| parse(s)))
@@ -97,13 +90,31 @@ pub fn solve() {
 
     let mut sum = 0;
     for i in (0..packets.len()).step_by(2) {
-        if right_order(&packets[i], &packets[i+1]) ==  State::Pass {
+        if right_order(&packets[i], &packets[i+1]) == Ordering::Less {
             sum += i / 2 + 1;
+        }
+    }
+
+    packets.push(Packet::List(vec![Packet::Num(2)]));
+    packets.push(Packet::List(vec![Packet::Num(6)]));
+
+    packets.sort_by(right_order);
+
+    let mut first_key = 0;
+    let mut second_key = 0;
+
+    for (i, p) in packets.iter().enumerate() {
+        if right_order(&p, &Packet::List(vec![Packet::Num(2)])) == Ordering::Equal {
+            first_key = i + 1;
+        }
+        if right_order(&p, &Packet::List(vec![Packet::Num(6)])) == Ordering::Equal {
+            second_key = i + 1;
         }
     }
         
     println!("Dec {DAY}:");
     println!("Part one sum: {}", sum);
+    println!("Part two sum: {}", first_key * second_key);
     println!();
 }
 
