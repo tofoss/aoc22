@@ -12,22 +12,29 @@ pub fn solve() {
 
     let input = fs::read_to_string(prod).unwrap();
 
-    let mut grid = grid_from(input);
+    let mut grid1 = grid_from(&input);
+    let mut grid2 = grid_from(&input);
+    place_floor(&mut grid2);
 
-    let units = pour_sand(&mut grid);
+    let p1_limit = grid1.len() - 1;
+    let p2_limit = 0;
+
+    let units1 = pour_sand(&mut grid1, p1_limit);
+    let units2 = pour_sand(&mut grid2, p2_limit);
 
 
-    print_grid(&grid);
+    //print_grid(&grid2);
     println!("Dec {DAY}:");
-    println!("{} units came to rest.", units);
+    println!("Part one: {} units came to rest.", units1);
+    println!("Part two: {} units came to rest.", units2 + 1);
     println!();
 }
 
-fn pour_sand(grid: &mut Vec<Vec<char>>) -> usize {
+fn pour_sand(grid: &mut Vec<Vec<char>>, limit: usize) -> usize {
     let mut units = 0;
     loop {
         let p = simulate_flow(grid, Point { x: MID, y: 0 });
-        if p.y >= grid.len() - 1 {
+        if p.y == limit {
             break;
         }
         units += 1;
@@ -79,7 +86,7 @@ impl FromStr for Point {
     }
 }
 
-fn grid_from(input: String) -> Vec<Vec<char>> {
+fn grid_from(input: &String) -> Vec<Vec<char>> {
     let rock_formations: Vec<Vec<Point>> = input
         .lines()
         .map(|s| {
@@ -109,22 +116,25 @@ fn place_rocks(start: &Point, end: &Point, grid: &mut Vec<Vec<char>>) {
     if start.x < end.x {
         for i in start.x..end.x + 1 {
             grid[start.y][i] = '#';
-            println!("placing right: {}, {}", start.y, i);
         }
     } else if start.x > end.x {
         for i in end.x..start.x + 1 {
             grid[start.y][i] = '#';
-            println!("placing left: {}, {}", start.y, i);
         }
     } else if start.y < end.y {
         for i in start.y..end.y {
             grid[i][start.x] = '#';
-            println!("placing down: {}, {}", i, start.x);
         }
     } else if start.y > end.y {
         for i in end.y..start.y {
             grid[i][start.x] = '#';
-            println!("placing down: {}, {}", i, start.x);
         }
     }
+}
+
+fn place_floor(grid: &mut Vec<Vec<char>>) {
+    let air = vec!['.'; MID * 2];
+    let floor = vec!['#'; MID * 2];
+    grid.push(air);
+    grid.push(floor);
 }
