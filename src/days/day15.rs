@@ -73,8 +73,6 @@ struct Sensor {
         
         return vec![Point {x: x1, y }, Point {x: x2, y }]
     }
-
-     
  }
 
 pub fn solve() {
@@ -87,23 +85,31 @@ pub fn solve() {
     let input = fs::read_to_string(prod).unwrap();
 
     let sensors = parse(input.as_str());
-    //let n = points_on_line(10, &sensors);
-    let n = points_on_line(2_000_000, &sensors);
+    let u = points_on_line(2_000_000, &sensors);
+    let n = u[0][1].x - u[0][0].x;
+    //let freq = part_two(&sensors); // 39 seconds runtime...
         
     println!("Dec {DAY}:");
     println!("{} positions where beacon is not", n);
+    //println!("{} frequency of beacon is", freq); // 10457634860779
 }
 
-fn points_on_line(y: i32, sensors: &Vec<Sensor>) -> i32 {
-    println!("sensors intersecting y:");
-    for s in sensors {
-        let is = s.intersecting(y);
-        if is.len() != 0 {
-            println!("{:?} -> Rad: {}", s, s.rad());
-            println!("Intersections: {:?}", is);
+#[allow(dead_code)]
+fn part_two(sensors: &Vec<Sensor>) -> usize {
+    let mut sum: usize = 0;
+    for i in 0..4_000_000 {
+        let u = points_on_line(i, sensors);
+        if u.len() > 1 {
+            let x = u[0][1].x + 1;
+            let y = u[0][1].y;
+            sum = (x as usize * 4_000_000) + y as usize;
         }
     }
 
+    return sum;
+}
+
+fn points_on_line(y: i32, sensors: &Vec<Sensor>) -> Vec<Vec<Point>> {
     let mut xs: Vec<Vec<Point>> = sensors.iter()
         .filter_map(|s| {
             if s.intersecting(y).len() == 0 {
@@ -123,7 +129,6 @@ fn points_on_line(y: i32, sensors: &Vec<Sensor>) -> i32 {
         }
     });
 
-    let mut sum = 0;
 
     let mut cur = 0;
     let mut u = Vec::new();
@@ -140,11 +145,8 @@ fn points_on_line(y: i32, sensors: &Vec<Sensor>) -> i32 {
     
     u.push(vec![xs[cur][0], xs[cur][1]]);
 
-    for ele in u {
-        println!("{:?}", ele);
-        sum += ele[1].x - ele[0].x
-    }
-    return sum;
+    return u;
+
 }
 
 fn parse(input: &str) -> Vec<Sensor> {
