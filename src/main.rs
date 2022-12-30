@@ -18,4 +18,5 @@ fn main() {
     days::day13::solve();
     days::day14::solve();
     days::day15::solve();
+    days::day16::solve();
 }
